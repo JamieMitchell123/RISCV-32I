@@ -1,0 +1,9 @@
+.vscode
+obj_dir
+logs
+*.o
+*.vcd
+program.hex
+*dis.txt
+*.log
+graphs
