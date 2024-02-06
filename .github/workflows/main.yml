@@ -1,0 +1,51 @@
+# Install act as a GitHub CLI extension to run locally
+# https://github.com/nektos/act
+# Then run "gh act"
+
+name: integration
+
+on:
+    push:
+        branches:
+            - '*'
+    pull_request:
+        branches:
+            - '*'
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: setup-folder
+              uses: actions/checkout@v2
+            
+            - name: setup-dependencies
+              run: |
+                sudo apt update
+                sudo apt-get install -y libgtest-dev lcov gcc-riscv64-unknown-elf
+                
+                sudo apt-get install -y help2man perl make g++ git autoconf libunwind-dev
+                sudo apt-get install -y python3 flex bison ccache
+                sudo apt-get install -y libgoogle-perftools-dev numactl perl-doc
+                sudo apt-get install -y libfl2
+                sudo apt-get install -y libfl-dev
+                sudo apt-get install -y zlibc zlib1g zlib1g-dev || true
+
+                echo "Installing Verilator"
+                cd /tmp
+                rm -rf verilator
+
+                git clone https://github.com/verilator/verilator verilator
+                cd verilator
+                git checkout v4.226
+                autoconf
+                ./configure
+                make -j "$(nproc)"
+                sudo make install
+                cd ..
+                rm -rf verilator
+            
+            - name: run-tests
+              run: |
+                cd tb
+                ./doit.sh
